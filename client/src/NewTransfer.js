@@ -10,7 +10,7 @@ function NewTransfer({createTransfer}) {
 
   const updateTransfer = (e, field) => {
     const value = e.target.value;
-    // by putting the "..." berfore transfer, we tell the function we just want to update the object
+    // by putting the "..." before transfer, we tell the function we just want to update the object
     setTransfer({...transfer, [field]: value});
   }
 
