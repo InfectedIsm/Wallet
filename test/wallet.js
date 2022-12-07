@@ -79,12 +79,20 @@ describe("Wallet contract", function () {
       expect(transfers[0].sent, "wrong sent status").to.be.false;
     });
 
-    // NON WORKING
-    /////////////////////////////
     it('should NOT create transfers if sender is not approved', async() => {
       const { wallet, addr4, signer3 } = await loadFixture(deployTokenFixture);
-      expect(await wallet.connect(signer3).createTransfer(100, addr4)
-        ).to.be.revertedWith('only approver allowed');
+      await expect(wallet.connect(signer3).createTransfer(100, addr4)
+        ).to.be.reverted;
+    });
+
+    it('should increment approval', async () => {
+      const { wallet, addr0, addr1, signer1 } = await loadFixture(deployTokenFixture);
+      await wallet.createTransfer(100, addr1, {from: addr0});
+      let transfer = await wallet.getTransfers();
+      expect(transfer[0].approvals, "expecting 0 approvals before approved").to.equal(0);
+      await wallet.connect(signer1).approveTransfer(0, {from: addr1});
+      transfer = await wallet.getTransfers();
+      expect(transfer[0].approvals, "expecting 1 approvals after approved").to.equal(1);
     });
 
   });
