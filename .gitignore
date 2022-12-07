@@ -1,3 +1,10 @@
+#packages
 node_modules
-notes.txt
+
+#secrets
 .secrets.json
+notes.txt
+
+#Hardhat files
+cache
+artifacts

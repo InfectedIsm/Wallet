@@ -13,7 +13,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@openzeppelin/test-helpers": "^0.5.15",
-    "truffle": "^5.2.4"
+    "@openzeppelin/test-helpers": "^0.5.15"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+    "hardhat": "^2.12.3",
+    "install": "^0.13.0",
+    "npm": "^9.1.3"
   }
 }
