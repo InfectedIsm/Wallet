@@ -2,6 +2,7 @@
 node_modules
 
 #secrets
+.env
 .secrets.json
 notes.txt
 
