@@ -77,13 +77,13 @@ contract ('Wallet', (accounts) => {
     //     assert(walletBalance === '900',"wallet got wrong balance");
     // });
 
-    it('should NOT approve transfer if sender is not approved', async () => {
-        await wallet.createTransfer(100, accounts[5], {from: accounts[0]});
-        await expectRevert(
-            wallet.approveTransfer(0, {from: accounts[4]}),
-            'only approver allowed'
-        );
-      });
+    // it('should NOT approve transfer if sender is not approved', async () => {
+    //     await wallet.createTransfer(100, accounts[5], {from: accounts[0]});
+    //     await expectRevert(
+    //         wallet.approveTransfer(0, {from: accounts[4]}),
+    //         'only approver allowed'
+    //     );
+    //   });
 
     it('should NOT approve transfer if transfer is already sent', async () => {
         await wallet.createTransfer(100, accounts[6], {from: accounts[0]});

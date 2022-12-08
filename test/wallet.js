@@ -17,8 +17,10 @@ const { ethers } = require("hardhat");
 // `describe` receives the name of a section of your test suite, and a
 // callback. The callback must define the tests of that section. This callback
 // can't be an async function.
-describe("Wallet contract", function () {
+describe("Wallet Contract", function () {
 
+  //the deployTokenFixture function is executed once to get a context (wallet, signers, ...)
+  //then this context can be reused during test to save test time 
   async function deployTokenFixture() {
 
     const walletFactory = await ethers.getContractFactory("Wallet");
@@ -49,7 +51,7 @@ describe("Wallet contract", function () {
     // `it` is another Mocha function. This is the one you use to define your
     // tests. It receives the test name, and a callback function.
 
-    it('should have correct approvers and quorum', async () => {
+    it("should have correct approvers and quorum", async () => {
 
       const { wallet, signer0, signer1, signer2 } = await loadFixture(deployTokenFixture);
 
@@ -57,20 +59,20 @@ describe("Wallet contract", function () {
 
       const quorum = await wallet.quorum();
 
-      expect(approvers.length,'number of approvers incorrect').to.equal(3) // === 1, "number of approvers incorrect");
+      expect(approvers.length,"number of approvers incorrect").to.equal(3) // === 1, "number of approvers incorrect");
       expect(approvers[0], "(at least) one of the approvers is not correct").to.equal(signer0.address);
       expect(approvers[1], "(at least) one of the approvers is not correct").to.equal(signer1.address);
       expect(approvers[2], "(at least) one of the approvers is not correct").to.equal(signer2.address);
       expect(quorum, "quorum value not correct").to.equal(2);
     });
 
-    it('should create transfers', async () => {
+    it("should create transfers", async () => {
       const { wallet, signer0, signer3 } = await loadFixture(deployTokenFixture);
 
       await wallet.createTransfer(100, signer3.address, {from: signer0.address});
       const transfers = await wallet.getTransfers();
       //here numbers are compared with strings because they are in a struct in solidity
-      //stupid but that's how it is
+      //stupid but that"s how it is
       expect(transfers.length, "number of transfer incorrect").to.equal(1);
       expect(transfers[0].id, "wrong transfer id").to.equal(0);
       expect(transfers[0].amount, "wrong amount").to.equal(100);
@@ -79,13 +81,13 @@ describe("Wallet contract", function () {
       expect(transfers[0].sent, "wrong sent status").to.be.false;
     });
 
-    it('should NOT create transfers if sender is not approved', async() => {
+    it("should NOT create transfers if sender is not approved", async() => {
       const { wallet, signer3, signer4 } = await loadFixture(deployTokenFixture);
       await expect(wallet.connect(signer3).createTransfer(100, signer4.address)
-        ).to.be.reverted;
+        ).to.be.revertedWith("only approver allowed");
     });
 
-    it('should increment approval', async () => {
+    it("should increment approval", async () => {
       const { wallet, signer0, signer1} = await loadFixture(deployTokenFixture);
       
       await wallet.connect(signer0).createTransfer(100, signer1.address, {from: signer0.address});
@@ -100,7 +102,7 @@ describe("Wallet contract", function () {
       expect(walletBalance, "wallet balance is wrong").to.equal("10.0")
     });
 
-    it('should send transfer if quorum reached', async () => {
+    it("should send transfer if quorum reached", async () => {
       const {wallet, signer0, signer1, signer2} = await loadFixture(deployTokenFixture);
 
       await wallet.createTransfer(ethers.utils.parseEther("1"), signer2.address, {from: signer0.address});
@@ -113,10 +115,21 @@ describe("Wallet contract", function () {
       expect(transfers[0].sent, "expecting sent flag true").to.equal(true);
       const walletBalance = ethers.utils.formatEther(await wallet.provider.getBalance(wallet.address));
       expect(walletBalance, "wallet balance is wrong").to.equal("9.0")
-
     });
+
+    it("should NOT approve transfer if sender is not approved", async () => { 
+      const {wallet, signer0, signer3} = await loadFixture(deployTokenFixture);
+      await wallet.createTransfer(ethers.utils.parseEther("1"), signer0.address, {from: signer0.address});
+      let transfers = await wallet.getTransfers();
+      await expect (
+         wallet.connect(signer0).approveTransfer(transfers[0].id, {from: signer0.address})
+        ).not.to.be.reverted;
+      await expect (
+          wallet.connect(signer3).approveTransfer(transfers[0].id, {from: signer3.address})
+        ).to.be.revertedWith("only approver allowed");
+    });
+
   });
 
-  // describe("Transactions", function () {
-  // });
+
 });
