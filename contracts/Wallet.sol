@@ -3,7 +3,6 @@ pragma solidity 0.8.17;
 
 contract Wallet {
     address[] public approvers;
-    //setting this constant public automatically create a getter function
     uint public quorum;  
     struct Transfer {
         uint id;
@@ -13,10 +12,10 @@ contract Wallet {
         bool sent;
     }
     Transfer[] public transfers;
-    //store for each transfer (uint) if the approvers (address) already approved it (bool)
     mapping(address => mapping(uint => bool)) public approvals; 
 
     constructor(address[] memory _approvers, uint _quorum) {
+        require(_approvers.length >= _quorum);
         approvers = _approvers; //list of valid approvers
         quorum = _quorum;  //number of validation required to confirm a transfer
     }
@@ -26,7 +25,7 @@ contract Wallet {
     }
 
     function createTransfer (uint amount, address payable to) external onlyApprover() {
-        
+
         transfers.push(Transfer(
             transfers.length,
             amount,
@@ -55,12 +54,12 @@ contract Wallet {
         }
     }
 
-    //solidity built in function to receive ether if msg.data is empty
     receive() external payable {}
 
     modifier onlyApprover() {
     bool allowed = false;
-    for (uint i=0; i<approvers.length; i++) {
+    uint arrayLen = approvers.length; //gas optimization to access only one time to this function
+    for (uint i=0; i< arrayLen; i++) {
         if (approvers[i] == msg.sender) {
             allowed = true;
         }
