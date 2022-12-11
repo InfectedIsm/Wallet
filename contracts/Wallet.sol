@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
+import "../node_modules/hardhat/console.sol";
 
 contract Wallet {
     address[] public approvers;
+    mapping (address => bool) isApprover;
     uint public quorum;  
     struct Transfer {
         uint id;
@@ -17,6 +19,13 @@ contract Wallet {
     constructor(address[] memory _approvers, uint _quorum) {
         require(_approvers.length >= _quorum);
         approvers = _approvers; //list of valid approvers
+        //gas optimization to access only one time length in for loop
+        //using a mapping here to make the modifier onlyOwner not iterate over an array
+        //over time it will prove its cost efficiency as this modifier is used multiple times
+        uint arrayLen = approvers.length; 
+        for (uint i=0; i< arrayLen; i++) {
+           isApprover[approvers[i]] = true; 
+        }
         quorum = _quorum;  //number of validation required to confirm a transfer
     }
 
@@ -57,14 +66,7 @@ contract Wallet {
     receive() external payable {}
 
     modifier onlyApprover() {
-    bool allowed = false;
-    uint arrayLen = approvers.length; //gas optimization to access only one time to this function
-    for (uint i=0; i< arrayLen; i++) {
-        if (approvers[i] == msg.sender) {
-            allowed = true;
-        }
-    }
-    require(allowed == true, "only approver allowed");
+    require(isApprover[msg.sender] == true, "only approver allowed");
     _;
     }
 
