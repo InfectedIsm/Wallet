@@ -191,7 +191,18 @@ describe("Wallet Contract", function () {
         .to.be.revertedWith("transfer has already been sent");
     });
 
+    it("should NOT approve transfer twice by same user", async () => {
+      const {wallet, signer0, signer1, signer2} = await loadFixture(deployTokenFixture);
+      await wallet.connect(signer0).createTransfer(ethers.utils.parseEther("1.0"), signer2.address, {from: signer0.address});
+      let transfers = await wallet.getTransfers();
+      await wallet.connect(signer0).approveTransfer(transfers[0].id, {from: signer0.address});
+      await expect(
+        wallet.connect(signer0).approveTransfer(transfers[0].id, {from: signer0.address}))
+        .to.be.revertedWith("cannot approve transfer twice");
+    }); 
   });
 
+   ////////////////
+  //End of tests//
 
 });
